@@ -97,7 +97,6 @@ public:
 
 FXMainWindow *g_main_window;
 
-
 FXDEFMAP(MainWindow) MainWindowMap [] = {
 	FXMAPFUNC(SEL_COMMAND, MainWindow::ID_CONNECT, MainWindow::onConnect ),
 	FXMAPFUNC(SEL_COMMAND, MainWindow::ID_DISCONNECT, MainWindow::onDisconnect ),
@@ -182,15 +181,12 @@ MainWindow::MainWindow(FXApp *app)
 	get_feature_button = new FXButton(matrix, "Get Feature Report", NULL, this, ID_GET_FEATURE_REPORT, BUTTON_NORMAL|LAYOUT_FILL_X);
 	get_feature_button->disable();
 
-
 	// Input Group Box
 	gb = new FXGroupBox(vf, "Input", FRAME_GROOVE|LAYOUT_FILL_X|LAYOUT_FILL_Y);
 	FXVerticalFrame *innerVF = new FXVerticalFrame(gb, LAYOUT_FILL_X|LAYOUT_FILL_Y);
 	input_text = new FXText(new FXHorizontalFrame(innerVF,LAYOUT_FILL_X|LAYOUT_FILL_Y|FRAME_SUNKEN|FRAME_THICK, 0,0,0,0, 0,0,0,0), NULL, 0, LAYOUT_FILL_X|LAYOUT_FILL_Y);
 	input_text->setEditable(false);
 	new FXButton(innerVF, "Clear", NULL, this, ID_CLEAR, BUTTON_NORMAL|LAYOUT_RIGHT);
-	
-
 }
 
 MainWindow::~MainWindow()
@@ -208,7 +204,6 @@ MainWindow::create()
 	show();
 
 	onRescan(NULL, 0, NULL);
-	
 
 #ifdef __APPLE__
 	init_apple_message_system();
@@ -250,6 +245,7 @@ MainWindow::onConnect(FXObject *sender, FXSelector sel, void *ptr)
 	s.format("Connected to: %04hx:%04hx -", device_info->vendor_id, device_info->product_id);
 	s += FXString(" ") + device_info->manufacturer_string;
 	s += FXString(" ") + device_info->product_string;
+	s += FXString(" ") + device_info->path;
 	connected_label->setText(s);
 	output_button->enable();
 	feature_button->enable();
@@ -257,7 +253,6 @@ MainWindow::onConnect(FXObject *sender, FXSelector sel, void *ptr)
 	connect_button->disable();
 	disconnect_button->enable();
 	input_text->setText("");
-
 
 	return 1;
 }
@@ -294,11 +289,14 @@ MainWindow::onRescan(FXObject *sender, FXSelector sel, void *ptr)
 		// Add it to the List Box.
 		FXString s;
 		FXString usage_str;
+		FXString path_str;
 		s.format("%04hx:%04hx -", cur_dev->vendor_id, cur_dev->product_id);
 		s += FXString(" ") + cur_dev->manufacturer_string;
 		s += FXString(" ") + cur_dev->product_string;
 		usage_str.format(" (usage: %04hx:%04hx) ", cur_dev->usage_page, cur_dev->usage);
-		s += usage_str;
+		path_str.format(" (path: %s) ", cur_dev->path);
+		// s += usage_str;
+		s += path_str;
 		FXListItem *li = new FXListItem(s, NULL, cur_dev);
 		device_list->appendItem(li);
 		
