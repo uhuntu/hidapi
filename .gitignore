@@ -27,3 +27,7 @@ libtool
 
 # Qt Creator
 CMakeLists.txt.user
+
+.vscode/
+testgui/testgui
+
