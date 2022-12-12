@@ -14,7 +14,6 @@
  which use HIDAPI.
 ********************************************************/
 
-
 #include <fx.h>
 
 #include "hidapi.h"
@@ -67,7 +66,6 @@ private:
 	hid_device *connected_device;
 	size_t getDataFromTextField(FXTextField *tf, char *buf, size_t len);
 	int getLengthFromTextField(FXTextField *tf);
-
 
 protected:
 	MainWindow() {};

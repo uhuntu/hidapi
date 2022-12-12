@@ -1306,7 +1306,6 @@ end:
 	return cr == CR_SUCCESS ? 0 : -1;
 }
 
-
 HID_API_EXPORT const wchar_t * HID_API_CALL  hid_error(hid_device *dev)
 {
 	if (dev) {

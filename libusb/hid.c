@@ -1269,7 +1269,6 @@ err:
 	return NULL;
 }
 
-
 int HID_API_EXPORT hid_write(hid_device *dev, const unsigned char *data, size_t length)
 {
 	int res;

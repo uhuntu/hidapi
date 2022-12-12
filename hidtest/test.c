@@ -111,7 +111,6 @@ int main(int argc, char* argv[])
 	buf[0] = 0x01;
 	buf[1] = 0x81;
 
-
 	// Open the device using the VID, PID,
 	// and optionally the Serial number.
 	////handle = hid_open(0x4d8, 0x3f, L"12345");
@@ -201,7 +200,6 @@ int main(int argc, char* argv[])
 	if (res < 0) {
 		printf("Unable to write(): %ls\n", hid_error(handle));
 	}
-
 
 	// Request state (cmd 0x81). The first byte is the report number (0x1).
 	buf[0] = 0x1;
