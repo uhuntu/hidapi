@@ -71,40 +71,14 @@ void print_devices(struct hid_device_info *cur_dev) {
 	}
 }
 
-int main(int argc, char* argv[])
+void test(void)
 {
-	(void)argc;
-	(void)argv;
-
-	int res;
 	unsigned char buf[256];
+	hid_device *handle;
 	#define MAX_STR 255
 	wchar_t wstr[MAX_STR];
-	hid_device *handle;
+	int res;
 	int i;
-
-	struct hid_device_info *devs;
-
-	printf("hidapi test/example tool. Compiled with hidapi version %s, runtime version %s.\n", HID_API_VERSION_STR, hid_version_str());
-	if (HID_API_VERSION == HID_API_MAKE_VERSION(hid_version()->major, hid_version()->minor, hid_version()->patch)) {
-		printf("Compile-time version matches runtime version of hidapi.\n\n");
-	}
-	else {
-		printf("Compile-time version is different than runtime version of hidapi.\n]n");
-	}
-
-	if (hid_init())
-		return -1;
-
-#if defined(__APPLE__) && HID_API_VERSION >= HID_API_MAKE_VERSION(0, 12, 0)
-	// To work properly needs to be called before hid_open/hid_open_path after hid_init.
-	// Best/recommended option - call it right after hid_init.
-	hid_darwin_set_open_exclusive(0);
-#endif
-
-	devs = hid_enumerate(0x0, 0x0);
-	print_devices(devs);
-	hid_free_enumeration(devs);
 
 	// Set up the command buffer.
 	memset(buf,0x00,sizeof(buf));
@@ -253,6 +227,35 @@ int main(int argc, char* argv[])
 #ifdef _WIN32
 	system("pause");
 #endif
+}
+
+int main(int argc, char* argv[])
+{
+	(void)argc;
+	(void)argv;
+
+	struct hid_device_info *devs;
+
+	printf("hidapi test/example tool. Compiled with hidapi version %s, runtime version %s.\n", HID_API_VERSION_STR, hid_version_str());
+	if (HID_API_VERSION == HID_API_MAKE_VERSION(hid_version()->major, hid_version()->minor, hid_version()->patch)) {
+		printf("Compile-time version matches runtime version of hidapi.\n\n");
+	}
+	else {
+		printf("Compile-time version is different than runtime version of hidapi.\n]n");
+	}
+
+	if (hid_init())
+		return -1;
+
+#if defined(__APPLE__) && HID_API_VERSION >= HID_API_MAKE_VERSION(0, 12, 0)
+	// To work properly needs to be called before hid_open/hid_open_path after hid_init.
+	// Best/recommended option - call it right after hid_init.
+	hid_darwin_set_open_exclusive(0);
+#endif
+
+	devs = hid_enumerate(0x0, 0x0);
+	print_devices(devs);
+	hid_free_enumeration(devs);
 
 	return 0;
 }
