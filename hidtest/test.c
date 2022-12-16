@@ -24,9 +24,9 @@
 
 // Headers needed for sleeping.
 #ifdef _WIN32
-	#include <windows.h>
+#include <windows.h>
 #else
-	#include <unistd.h>
+#include <unistd.h>
 #endif
 
 // Fallback/example
@@ -52,13 +52,13 @@
 #endif
 //
 
-void print_device(struct hid_device_info *cur_dev) {
+void print_device(struct hid_device_info* cur_dev) {
 	printf("Device Found\n  type: %04hx %04hx\n  path: %s\n  serial_number: %ls", cur_dev->vendor_id, cur_dev->product_id, cur_dev->path, cur_dev->serial_number);
 	printf("\n");
 	printf("  Manufacturer: %ls\n", cur_dev->manufacturer_string);
 	printf("  Product:      %ls\n", cur_dev->product_string);
 	printf("  Release:      %hx\n", cur_dev->release_number);
-	printf("  Interface:    %d\n",  cur_dev->interface_number);
+	printf("  Interface:    %d\n", cur_dev->interface_number);
 	printf("  Usage (page): 0x%hx (0x%hx)\n", cur_dev->usage, cur_dev->usage_page);
 	printf("  Bus type: %d\n", cur_dev->bus_type);
 	printf("\n");
@@ -80,8 +80,8 @@ struct hid_device_ {
 	struct hid_device_info* device_info;
 };
 
-void print_dev(struct hid_device_ * dev) {
-	
+void print_dev(struct hid_device_* dev) {
+	printf("Report Found");
 	printf("\n");
 	printf("  output_report_length:  %d\n", dev->output_report_length);
 	printf("  input_report_length :  %d\n", dev->input_report_length);
@@ -89,7 +89,7 @@ void print_dev(struct hid_device_ * dev) {
 	printf("\n");
 }
 
-void print_devices(struct hid_device_info *cur_dev) {
+void print_devices(struct hid_device_info* cur_dev) {
 	while (cur_dev) {
 		print_device(cur_dev);
 		cur_dev = cur_dev->next;
@@ -145,7 +145,7 @@ HID_API_EXPORT hid_device* HID_API_CALL hid_open_usage(unsigned short vendor_id,
 	return handle;
 }
 
-int test(void)
+int test_orig(void)
 {
 	int res;
 	unsigned char buf[256];
@@ -302,7 +302,7 @@ int test(void)
 
 // 0x0EEF - VID
 // 0xC121 - PID
-int eeti(void)
+int test_eeti(void)
 {
 	int res;
 	unsigned char buf[256];
@@ -310,6 +310,8 @@ int eeti(void)
 	//wchar_t wstr[MAX_STR];
 	hid_device* handle;
 	int i;
+
+	printf("trying to open eeti device\n");
 
 	// Set up the command buffer.
 	memset(buf, 0, sizeof(buf)); // clean up to 0
@@ -319,7 +321,7 @@ int eeti(void)
 	// and optionally the Serial number.
 	handle = hid_open_usage(0x0EEF, 0xC121, 0xFF00, 0x01); // Vendor-Defined 1
 	if (!handle) {
-		printf("unable to open device\n");
+		printf("unable to open eeti device\n");
 		hid_exit();
 		return 1;
 	}
@@ -381,6 +383,8 @@ int eeti(void)
 
 	memset(buf, 0, sizeof(buf)); // clean up to 0
 
+	printf("Enabling and Disabling of Touch Solution\n");
+
 	// Enabling and Disabling of Touch Solution. (DNSubCmd2 0x01). The first byte is the report number (0x03).
 	buf[0] = 0x03; // report id
 	buf[1] = 0x05; // length
@@ -390,25 +394,22 @@ int eeti(void)
 	buf[5] = 0x01; // DNSubCmd2 // Enabling and Disabling of Touch Solution
 	buf[6] = 0x01; // 0x00, disable, 0x01, enable
 
+	printf("writing...\n");
+
 	res = hid_write(handle, buf, 64);
 	if (res < 0) {
 		printf("Unable to write()/1: %ls\n", hid_error(handle));
 	}
 
-	memset(buf, 0, sizeof(buf)); // clean up to 0
-
-	// Enabling and Disabling of Touch Solution. (DNSubCmd2 0x01). The first byte is the report number (0x03).
-	buf[0] = 0x03; // report id
-	buf[1] = 0x05; // length
-	buf[2] = 0x36; // CmdMj // FIXED
-	buf[3] = 0x91; // CmdMn // FIXED
-	buf[4] = 0x10; // DNSubCmd1 // FIXED
-	buf[5] = 0x01; // DNSubCmd2 // Enabling and Disabling of Touch Solution
-	buf[6] = 0x00; // 0x00, disable, 0x01, enable
-	res = hid_write(handle, buf, 64);
-	if (res < 0) {
-		printf("Unable to write()/2: %ls\n", hid_error(handle));
+	if (res > 0) {
+		printf("Data write:\n   ");
+		// Print out the returned buffer.
+		for (i = 0; i < res; i++)
+			printf("%02x ", (unsigned int)buf[i]);
+		printf("\n");
 	}
+
+	memset(buf, 0, sizeof(buf)); // clean up to 0
 
 	// Read requested state. hid_read() has been set to be
 	// non-blocking by the call to hid_set_nonblocking() above.
@@ -451,51 +452,31 @@ int eeti(void)
 	return 0;
 }
 
-int ilitek(void)
+// 0x222A - VID
+// 0x546A - PID
+int test_ilitek(void)
 {
 	int res;
 	unsigned char buf[256];
 #define MAX_STR 255
-	wchar_t wstr[MAX_STR];
+	//wchar_t wstr[MAX_STR];
 	hid_device* handle;
 	int i;
 
+	printf("trying to open ilitek device\n");
+
 	// Set up the command buffer.
-	memset(buf, 0x00, sizeof(buf));
-	buf[0] = 0x01;
-	buf[1] = 0x81;
+	memset(buf, 0, sizeof(buf)); // clean up to 0
+	buf[0] = 0x03; // report id 0x03
 
 	// Open the device using the VID, PID,
 	// and optionally the Serial number.
-	////handle = hid_open(0x4d8, 0x3f, L"12345");
-	handle = hid_open(0x4d8, 0x3f, NULL);
+	handle = hid_open_usage(0x222A, 0x546A, 0xFF00, 0x01); // Vendor-Defined 1
 	if (!handle) {
-		printf("unable to open device\n");
+		printf("unable to open ilitek device\n");
 		hid_exit();
 		return 1;
 	}
-
-	// Read the Manufacturer String
-	wstr[0] = 0x0000;
-	res = hid_get_manufacturer_string(handle, wstr, MAX_STR);
-	if (res < 0)
-		printf("Unable to read manufacturer string\n");
-	printf("Manufacturer String: %ls\n", wstr);
-
-	// Read the Product String
-	wstr[0] = 0x0000;
-	res = hid_get_product_string(handle, wstr, MAX_STR);
-	if (res < 0)
-		printf("Unable to read product string\n");
-	printf("Product String: %ls\n", wstr);
-
-	// Read the Serial Number String
-	wstr[0] = 0x0000;
-	res = hid_get_serial_number_string(handle, wstr, MAX_STR);
-	if (res < 0)
-		printf("Unable to read serial number string\n");
-	printf("Serial Number String: (%d) %ls", wstr[0], wstr);
-	printf("\n");
 
 	struct hid_device_info* info = hid_get_device_info(handle);
 	if (info == NULL) {
@@ -505,65 +486,44 @@ int ilitek(void)
 		print_devices(info);
 	}
 
-	// Read Indexed String 1
-	wstr[0] = 0x0000;
-	res = hid_get_indexed_string(handle, 1, wstr, MAX_STR);
-	if (res < 0)
-		printf("Unable to read indexed string 1\n");
-	printf("Indexed String 1: %ls\n", wstr);
+	print_dev(handle);
 
 	// Set the hid_read() function to be non-blocking.
-	hid_set_nonblocking(handle, 1);
+	hid_set_nonblocking(handle, 1); // by default it is blocking
 
 	// Try to read from the device. There should be no
 	// data here, but execution should not block.
-	res = hid_read(handle, buf, 17);
+	res = hid_read(handle, buf, 64); // as we set nonblocking above
 
-	// Send a Feature Report to the device
-	buf[0] = 0x2;
-	buf[1] = 0xa0;
-	buf[2] = 0x0a;
-	buf[3] = 0x00;
-	buf[4] = 0x00;
-	res = hid_send_feature_report(handle, buf, 17);
+	memset(buf, 0, sizeof(buf)); // clean up to 0
+
+	printf("Enabling and Disabling of Touch Report\n");
+
+	// Enabling and Disabling of Touch Report. (Register 0x61). The first byte is the report number (0x03).
+	buf[0] = 0x03; // report id
+	buf[1] = 0xA3; // header
+	buf[2] = 0x03; // write length // If data length is 2, means read current touch report status
+	buf[3] = 0x02; // read length
+	buf[4] = 0xFA; // command code
+	buf[5] = 0x61; // register
+	buf[6] = 0x00; // 0x00, enable, 0x01, disable
+
+	printf("writing...\n");
+
+	res = hid_write(handle, buf, 64);
 	if (res < 0) {
-		printf("Unable to send a feature report.\n");
+		printf("Unable to write()/1: %ls\n", hid_error(handle));
 	}
 
-	memset(buf, 0, sizeof(buf));
-
-	// Read a Feature Report from the device
-	buf[0] = 0x2;
-	res = hid_get_feature_report(handle, buf, sizeof(buf));
-	if (res < 0) {
-		printf("Unable to get a feature report: %ls\n", hid_error(handle));
-	}
-	else {
+	if (res > 0) {
+		printf("Data write:\n   ");
 		// Print out the returned buffer.
-		printf("Feature Report\n   ");
 		for (i = 0; i < res; i++)
 			printf("%02x ", (unsigned int)buf[i]);
 		printf("\n");
 	}
 
-	memset(buf, 0, sizeof(buf));
-
-	// Toggle LED (cmd 0x80). The first byte is the report number (0x1).
-	buf[0] = 0x1;
-	buf[1] = 0x80;
-	res = hid_write(handle, buf, 17);
-	if (res < 0) {
-		printf("Unable to write(): %ls\n", hid_error(handle));
-	}
-
-
-	// Request state (cmd 0x81). The first byte is the report number (0x1).
-	buf[0] = 0x1;
-	buf[1] = 0x81;
-	hid_write(handle, buf, 17);
-	if (res < 0) {
-		printf("Unable to write()/2: %ls\n", hid_error(handle));
-	}
+	memset(buf, 0, sizeof(buf)); // clean up to 0
 
 	// Read requested state. hid_read() has been set to be
 	// non-blocking by the call to hid_set_nonblocking() above.
@@ -634,7 +594,7 @@ int main(int argc, char* argv[])
 	//print_devices(devs);
 	//hid_free_enumeration(devs);
 
-	if (eeti()) {
+	if (test_eeti() && test_ilitek()) {
 		return 1;
 	}
 
