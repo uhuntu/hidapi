@@ -71,7 +71,7 @@ void print_devices(struct hid_device_info *cur_dev) {
 	}
 }
 
-void test(void)
+int test(void)
 {
 	unsigned char buf[256];
 	hid_device *handle;
@@ -132,7 +132,7 @@ void test(void)
 	printf("Indexed String 1: %ls\n", wstr);
 
 	// Set the hid_read() function to be non-blocking.
-	hid_set_nonblocking(handle, 1);
+	hid_set_nonblocking(handle, 1); // by default it is blocking
 
 	// Try to read from the device. There should be no
 	// data here, but execution should not block.
@@ -227,6 +227,8 @@ void test(void)
 #ifdef _WIN32
 	system("pause");
 #endif
+
+	return 0;
 }
 
 int main(int argc, char* argv[])
@@ -256,6 +258,35 @@ int main(int argc, char* argv[])
 	devs = hid_enumerate(0x0, 0x0);
 	print_devices(devs);
 	hid_free_enumeration(devs);
+
+	hid_device *handle0 = NULL;
+	hid_device *handle1 = NULL;
+	hid_device *handle2 = NULL;
+
+	handle0 = hid_open_path("1-1.2:1.0");
+	if (handle0 == NULL) {
+		printf("Something wrong with handle0\n");
+	} else {
+		printf("Success for creating handle0\n");
+	}
+
+	handle1 = hid_open_path("1-1.2:1.1");
+	if (handle1 == NULL) {
+		printf("Something wrong with handle1\n");
+	} else {
+		printf("Success for creating handle1\n");
+	}
+
+	handle2 = hid_open_path("1-1.2:1.2");
+	if (handle2 == NULL) {
+		printf("Something wrong with handle2\n");
+	} else {
+		printf("Success for creating handle2\n");
+	}
+
+	hid_close(handle0);
+	hid_close(handle1);
+	hid_close(handle2);
 
 	return 0;
 }
