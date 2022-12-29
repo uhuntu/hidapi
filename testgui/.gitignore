@@ -18,3 +18,4 @@ hidapi-libusb-testgui
 *.la
 *.lo
 TestGUI.app
+testgui
